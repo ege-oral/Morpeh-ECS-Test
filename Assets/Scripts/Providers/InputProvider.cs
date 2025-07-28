@@ -13,12 +13,10 @@ namespace Providers
     {
         [SerializeField] private float movementSpeed = 5f;
         
-        private World _world;
         private Stash<MovementComponent> _stash;
 
         private void Awake()
         {
-            _world = World.Default;
             _stash = World.Default.GetStash<MovementComponent>();
         }
 

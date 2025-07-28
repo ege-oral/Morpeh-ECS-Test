@@ -10,10 +10,7 @@ namespace Components
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct MovementComponent : IComponent
     {
-        public Vector3 direction;
         public float speed;
-        public float acceleration;
-        public float deceleration;
-        public bool isGrounded;
+        public Vector3 direction;
     }
 }

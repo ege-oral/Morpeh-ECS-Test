@@ -1,7 +1,6 @@
 using Components;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using UnityEngine;
 
 namespace Systems
 {
