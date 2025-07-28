@@ -27,7 +27,7 @@ public class Startup : MonoBehaviour
         _world.AddSystemsGroup(order: 0, _systems);
 
         CreatePlayerEntity();
-        // CreateEnemyEntity();
+        CreateEnemyEntity();
     }
     
     private void Update() 
@@ -77,9 +77,13 @@ public class Startup : MonoBehaviour
         ref var transformData = ref transformProvider.GetData();
         transformData = new TransformComponent();
         
+        var enemyTagProvider = enemyGo.GetComponent<EnemyTagProvider>();
+        ref var enemyTagData = ref enemyTagProvider.GetData();
+        enemyTagData = new EnemyTag();
+        
         _world.GetStash<MovementComponent>().Set(entity, movementData);
         _world.GetStash<TransformComponent>().Set(entity, transformData);
-        _world.GetStash<EnemyTag>().Set(entity);
+        _world.GetStash<EnemyTag>().Set(entity, enemyTagData);
 
         _entityToTransform[entity] = enemyGo.transform;
     }
