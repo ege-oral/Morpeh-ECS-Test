@@ -459,6 +459,8 @@ MonoBehaviour:
     type: 3}
   enemyPrefab: {fileID: 1241902322197914282, guid: c745dd3324830408ea75c8720456c743,
     type: 3}
+  projectilePrefab: {fileID: 8466961170715741090, guid: 6f048036ba4744c94808fb1abbc24309,
+    type: 3}
 --- !u!4 &2092183815
 Transform:
   m_ObjectHideFlags: 0

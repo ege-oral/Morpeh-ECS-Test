@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Components;
+using Components.Shoot;
 using Providers;
 using Scellecs.Morpeh;
 using Systems;
@@ -9,6 +10,7 @@ public class Startup : MonoBehaviour
 {
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private GameObject projectilePrefab;
     
     private World _world;
     private SystemsGroup _systems;
@@ -23,6 +25,10 @@ public class Startup : MonoBehaviour
         _systems.AddSystem(new InputSystem());
         _systems.AddSystem(new PlayerMovementSystem());
         _systems.AddSystem(new EnemyNavigationSystem());
+        _systems.AddSystem(new ShooterSystem());
+        _systems.AddSystem(new ProjectileSpawnSystem(projectilePrefab, _entityToTransform));
+        _systems.AddSystem(new ProjectileMovementSystem());
+        _systems.AddSystem(new ViewSyncSystem(_entityToTransform));
         _systems.Initialize();
         _world.AddSystemsGroup(order: 0, _systems);
 
@@ -52,6 +58,15 @@ public class Startup : MonoBehaviour
         ref var transformData = ref transformProvider.GetData();
         transformData = new TransformComponent();
         
+        var shooterProvider = playerGo.GetComponent<ShooterProvider>();
+        ref var shooterData = ref shooterProvider.GetData();
+        shooterData = new ShooterComponent
+        {
+            fireCooldown = 1f,
+            fireRange = 20f,
+            fireTimer = 1f
+        };
+        
         var playerTagProvider = playerGo.GetComponent<PlayerTagProvider>();
         ref var playerTagData = ref playerTagProvider.GetData();
         playerTagData = new PlayerTag();
@@ -59,8 +74,9 @@ public class Startup : MonoBehaviour
         _world.GetStash<InputComponent>().Set(entity, inputData);
         _world.GetStash<MovementComponent>().Set(entity, movementData);
         _world.GetStash<TransformComponent>().Set(entity, transformData);
+        _world.GetStash<ShooterComponent>().Set(entity, shooterData);
         _world.GetStash<PlayerTag>().Set(entity, playerTagData);
-
+    
         _entityToTransform[entity] = playerGo.transform;
     }
 
@@ -71,11 +87,14 @@ public class Startup : MonoBehaviour
         
         var movementProvider = enemyGo.GetComponent<MovementProvider>();
         ref var movementData = ref movementProvider.GetData();
-        movementData = new MovementComponent { speed = 3f };
+        movementData = new MovementComponent { speed = 1f };
         
         var transformProvider = enemyGo.GetComponent<TransformProvider>();
         ref var transformData = ref transformProvider.GetData();
-        transformData = new TransformComponent();
+        transformData = new TransformComponent
+        {
+            position = new Vector3(3f, 3f, 0)
+        };
         
         var enemyTagProvider = enemyGo.GetComponent<EnemyTagProvider>();
         ref var enemyTagData = ref enemyTagProvider.GetData();

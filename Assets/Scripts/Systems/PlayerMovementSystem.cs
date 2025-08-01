@@ -19,7 +19,8 @@ namespace Systems
 
         public void OnAwake()
         {
-            _filter = World.Filter.With<InputComponent>()
+            _filter = World.Filter
+                .With<InputComponent>()
                 .With<MovementComponent>()
                 .With<TransformComponent>()
                 .With<PlayerTag>()

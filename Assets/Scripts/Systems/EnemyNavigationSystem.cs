@@ -18,7 +18,6 @@ namespace Systems
         private Stash<TransformComponent> _transformStash;
         private Stash<MovementComponent> _movementStash;
         
-
         public void OnAwake()
         {
             _playerFilter = World.Filter.With<PlayerTag>().With<TransformComponent>().Build();

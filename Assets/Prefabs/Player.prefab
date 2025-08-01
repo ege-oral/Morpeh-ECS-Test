@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: -1554735643066021198}
   - component: {fileID: -1654694800070778434}
   - component: {fileID: 6436818591152010831}
+  - component: {fileID: -9034712856267941839}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -52,7 +53,6 @@ MonoBehaviour:
   serializedData:
     horizontalInput: 0
     verticalInput: 0
-  movementSpeed: 5
 --- !u!114 &4539628736174235387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,6 +110,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68337fcfd84534046a32433e91a5d6ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-9034712856267941839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1241902322197914282}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f23cd46fd9a449b394821bc2405733f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serializedData:
+    fireCooldown: 0
+    fireTimer: 0
+    fireRange: 0
 --- !u!1 &7669704463339012036
 GameObject:
   m_ObjectHideFlags: 0
