@@ -1,5 +1,5 @@
 using Components;
-using Components.Shoot;
+using Components.Projectile;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 
@@ -22,7 +22,7 @@ namespace Systems
         public void OnAwake() 
         {
             _shooterFilter = World.Filter.With<TransformComponent>().With<ShooterComponent>().Build();
-            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().Build();
+            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().Without<DeadTag>().Build();
             
             _transformStash = World.GetStash<TransformComponent>();
             _shooterStash = World.GetStash<ShooterComponent>();

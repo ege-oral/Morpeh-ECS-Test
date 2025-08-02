@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Components;
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Providers;
 using UnityEngine;
@@ -11,24 +12,23 @@ namespace Managers
         private readonly World _world = World.Default;
         private readonly Dictionary<Entity, Transform> _entityToTransform = new();
         private readonly Dictionary<string, ObjectPool> _pools = new();
-
+        
         public void InitializePool(string poolName, GameObject prefab, int size, Action<Entity, GameObject> configureEntity)
         {
             if (_pools.ContainsKey(poolName))
             {
-                Debug.LogWarning($"Pool {poolName} already exists!");
+                Debug.LogWarning($"Pool '{poolName}' already exists.");
                 return;
             }
 
-            var pool = new ObjectPool(prefab, size, configureEntity, _world);
-            _pools[poolName] = pool;
+            _pools[poolName] = new ObjectPool(prefab, size, configureEntity, _world);
         }
 
         public Entity GetPooledEntity(string poolName)
         {
-            if (_pools.TryGetValue(poolName, out var pool) == false)
+            if (!_pools.TryGetValue(poolName, out var pool))
             {
-                Debug.LogError($"Pool {poolName} not found!");
+                Debug.LogError($"Pool '{poolName}' not found.");
                 return default;
             }
 
@@ -37,52 +37,35 @@ namespace Managers
             return entity;
         }
 
-        public void ReturnEntity(Entity entity, string poolName)
+        public void ReturnEntity(string poolName, Entity entity)
         {
-            if (_pools.TryGetValue(poolName, out var pool) == false)
+            if (!_pools.TryGetValue(poolName, out var pool))
             {
-                Debug.LogError($"Pool {poolName} not found!");
+                Debug.LogError($"Pool '{poolName}' not found.");
                 return;
             }
 
-            if (_entityToTransform.TryGetValue(entity, out var transform))
+            if (_entityToTransform.Remove(entity, out var transform))
             {
                 pool.Return(entity, transform);
-                _entityToTransform.Remove(entity);
             }
         }
 
-        public void RegisterEntityView(Entity entity, Transform transform)
-        {
-            _entityToTransform[entity] = transform;
-        }
-
-        public void UnregisterEntityView(Entity entity)
-        {
-            _entityToTransform.Remove(entity);
-        }
-
-        public Transform GetEntityTransform(Entity entity)
-        {
-            return _entityToTransform.GetValueOrDefault(entity);
-        }
-
-        public Dictionary<Entity, Transform> GetEntityTransformMap()
-        {
-            return _entityToTransform;
-        }
+        public void RegisterEntityView(Entity entity, Transform transform) => _entityToTransform[entity] = transform;
+        public void UnregisterEntityView(Entity entity) => _entityToTransform.Remove(entity);
+        public Transform GetEntityTransform(Entity entity) => _entityToTransform.GetValueOrDefault(entity);
+        public IReadOnlyDictionary<Entity, Transform> GetEntityTransformMap() => _entityToTransform;
 
         public void Dispose()
         {
             foreach (var pool in _pools.Values)
-            {
                 pool.Dispose();
-            }
+
             _pools.Clear();
             _entityToTransform.Clear();
         }
-
-        private class ObjectPool : IDisposable
+        
+        private sealed class ObjectPool : IDisposable
         {
             private readonly Queue<(Entity entity, Transform transform)> _pool = new();
             private readonly GameObject _prefab;
@@ -96,18 +79,11 @@ namespace Managers
                 _configureEntity = configureEntity;
                 _world = world;
 
-                var poolParentGo = new GameObject($"{prefab.name}_Pool");
-                _poolParent = poolParentGo.transform;
+                _poolParent = new GameObject($"{prefab.name}_Pool").transform;
 
                 for (var i = 0; i < size; i++)
                 {
-                    var go = UnityEngine.Object.Instantiate(prefab, _poolParent);
-                    var entityProvider = go.GetComponent<EntityProvider>();
-                
-                    _configureEntity?.Invoke(entityProvider.Entity, go);
-                
-                    go.SetActive(false);
-                    _pool.Enqueue((entityProvider.Entity, go.transform));
+                    _pool.Enqueue(CreatePooledInstance());
                 }
             }
 
@@ -117,20 +93,17 @@ namespace Managers
                 {
                     var (entity, transform) = _pool.Dequeue();
                     transform.gameObject.SetActive(true);
+                    _world.GetStash<DeadTag>().Remove(entity);
                     return (entity, transform);
                 }
 
-                var newGo = UnityEngine.Object.Instantiate(_prefab);
-                var newEntity = _world.CreateEntity();
-                _configureEntity?.Invoke(newEntity, newGo);
-            
-                return (newEntity, newGo.transform);
+                return CreatePooledInstance();
             }
 
             public void Return(Entity entity, Transform transform)
             {
-                transform.gameObject.SetActive(false);
                 transform.SetParent(_poolParent);
+                transform.gameObject.SetActive(false);
                 _pool.Enqueue((entity, transform));
             }
 
@@ -139,17 +112,24 @@ namespace Managers
                 while (_pool.Count > 0)
                 {
                     var (entity, transform) = _pool.Dequeue();
-                    if (transform != null)
-                    {
-                        UnityEngine.Object.Destroy(transform.gameObject);
-                    }
+                    UnityEngine.Object.Destroy(transform.gameObject);
                     _world.RemoveEntity(entity);
                 }
 
-                if (_poolParent != null)
-                {
-                    UnityEngine.Object.Destroy(_poolParent.gameObject);
-                }
+                UnityEngine.Object.Destroy(_poolParent.gameObject);
+            }
+
+            private (Entity entity, Transform transform) CreatePooledInstance()
+            {
+                var go = UnityEngine.Object.Instantiate(_prefab, _poolParent);
+                var entityProvider = go.GetComponent<EntityProvider>();
+                var entity = entityProvider.Entity;
+
+                _world.GetStash<DeadTag>().Set(entity, new DeadTag());
+                _configureEntity?.Invoke(entity, go);
+
+                go.SetActive(false);
+                return (entity, go.transform);
             }
         }
     }

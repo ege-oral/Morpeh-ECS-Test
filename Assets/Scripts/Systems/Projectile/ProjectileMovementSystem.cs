@@ -1,9 +1,9 @@
 using Components;
-using Components.Shoot;
+using Components.Projectile;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 
-namespace Systems
+namespace Systems.Projectile
 {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]

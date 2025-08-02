@@ -1,5 +1,5 @@
 using Components;
-using Components.Shoot;
+using Components.Projectile;
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Providers;
 using UnityEngine;
@@ -18,14 +18,8 @@ namespace Providers
         protected override void Initialize()
         {
             _world.GetStash<InputComponent>().Set(Entity, new InputComponent());
-
             _world.GetStash<MovementComponent>().Set(Entity, new MovementComponent { speed = speed });
-        
-            _world.GetStash<TransformComponent>().Set(Entity, new TransformComponent
-            {
-                position = transform.position,
-                rotation = transform.rotation
-            });
+            _world.GetStash<TransformComponent>().Set(Entity, new TransformComponent());
         
             _world.GetStash<ShooterComponent>().Set(Entity, new ShooterComponent
             {
@@ -35,6 +29,13 @@ namespace Providers
             });
         
             _world.GetStash<PlayerTag>().Set(Entity, new PlayerTag());
+        }
+
+        public void InitializePosition(Vector3 position, Quaternion rotation)
+        {
+            ref var transformComponent = ref _world.GetStash<TransformComponent>().Get(Entity);
+            transformComponent.position = position;
+            transformComponent.rotation = rotation;
         }
     }
 }

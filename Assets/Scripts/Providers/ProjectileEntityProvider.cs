@@ -1,5 +1,5 @@
 using Components;
-using Components.Shoot;
+using Components.Projectile;
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Providers;
 using UnityEngine;
@@ -15,6 +15,7 @@ namespace Providers
         protected override void Initialize()
         {
             _world.GetStash<TransformComponent>().Set(Entity, new TransformComponent());
+            _world.GetStash<PoolableEntity>().Set(Entity, new PoolableEntity { poolName = "Projectile" });
             _world.GetStash<ProjectileComponent>().Set(Entity, new ProjectileComponent { speed = projectileSpeed });
         }
 

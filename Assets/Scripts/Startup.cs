@@ -2,6 +2,9 @@ using Managers;
 using Providers;
 using Scellecs.Morpeh;
 using Systems;
+using Systems.Enemy;
+using Systems.Player;
+using Systems.Projectile;
 using UnityEngine;
 
 public class Startup : MonoBehaviour
@@ -26,8 +29,12 @@ public class Startup : MonoBehaviour
         _systems.AddSystem(new EnemyNavigationSystem());
         _systems.AddSystem(new ShooterSystem());
         _systems.AddSystem(new ProjectileSpawnSystem(_entityViewManager));
+        _systems.AddSystem(new EnemySpawnSystem(_entityViewManager));
         _systems.AddSystem(new ProjectileMovementSystem());
         _systems.AddSystem(new ViewSyncSystem(_entityViewManager));
+        _systems.AddSystem(new ProjectileHitSystem());
+        _systems.AddSystem(new ReturnEntityToPoolSystem(_entityViewManager));
+        
         _systems.Initialize();
         _world.AddSystemsGroup(order: 0, _systems);
 
@@ -39,22 +46,25 @@ public class Startup : MonoBehaviour
     {
         _systems.Update(Time.deltaTime);
     }
-
+    
+    private void InitializePools()
+    {
+        _entityViewManager.InitializePool("Enemy", enemyPrefab, 5, null);
+        _entityViewManager.InitializePool("Projectile", projectilePrefab, 10, null);
+    }
+    
     private void CreateInitialEntities()
     {
-        CreatePlayerEntity();
+        CreatePlayerEntity(new Vector3(0f, 0f, 0f), Quaternion.identity);
         CreateEnemyEntity();
     }
     
-    private void CreatePlayerEntity()
+    private void CreatePlayerEntity(Vector3 position, Quaternion rotation)
     {
         var playerGo = Instantiate(playerPrefab);
         var playerProvider = playerGo.GetComponent<PlayerEntityProvider>();
-        
-        if (playerProvider != null)
-        {
-            _entityViewManager.RegisterEntityView(playerProvider.Entity, playerGo.transform);
-        }
+        playerProvider.InitializePosition(position, rotation);
+        _entityViewManager.RegisterEntityView(playerProvider.Entity, playerGo.transform);
     }
 
     private void CreateEnemyEntity()
@@ -64,13 +74,6 @@ public class Startup : MonoBehaviour
         var enemyEntityProvider = enemyTransform.GetComponent<EnemyEntityProvider>();
         enemyEntityProvider.InitializePosition(new Vector3(5f, 5f, 0), Quaternion.identity);
     }
-    
-    private void InitializePools()
-    {
-        _entityViewManager.InitializePool("Enemy", enemyPrefab, 1, null);
-        _entityViewManager.InitializePool("Projectile", projectilePrefab, 100, null);
-    }
-    
     
     private void OnDestroy() 
     {
