@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using Components;
 using Components.Shoot;
+using Managers;
 using Providers;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
@@ -18,13 +18,11 @@ namespace Systems
         private Stash<FireProjectileRequest> _fireRequestStash;
         private Stash<TransformComponent> _transformStash;
         
-        private readonly GameObject _projectilePrefab;
-        private readonly Dictionary<Entity, Transform> _entityViews;
+        private readonly EntityViewManager _entityViewManager;
         
-        public ProjectileSpawnSystem(GameObject projectilePrefab, Dictionary<Entity, Transform> entityViews)
+        public ProjectileSpawnSystem(EntityViewManager entityViewManager)
         {
-            _projectilePrefab = projectilePrefab;
-            _entityViews = entityViews;
+            _entityViewManager = entityViewManager;
         }
 
         public void OnAwake()
@@ -40,29 +38,16 @@ namespace Systems
             {
                 ref var fireRequest = ref _fireRequestStash.Get(shooter);
                 ref var shooterTransform = ref _transformStash.Get(shooter);
-                var view = Object.Instantiate(_projectilePrefab, shooterTransform.position, Quaternion.LookRotation(fireRequest.direction));
+                var projectTileEntity = _entityViewManager.GetPooledEntity("Projectile");
+                var projectTileEntityTransform = _entityViewManager.GetEntityTransform(projectTileEntity);
+                if(projectTileEntityTransform == null) continue;
+                
+                var projectileEntityProvider = projectTileEntityTransform.GetComponent<ProjectileEntityProvider>();
+                if(projectileEntityProvider == null) continue;
 
-                var transformProvider = view.GetComponent<TransformProvider>();
-                ref var transformData = ref transformProvider.GetData();
-                transformData = new TransformComponent
-                {
-                    position = shooterTransform.position,
-                    rotation = Quaternion.LookRotation(fireRequest.direction)
-                };
+                projectileEntityProvider.InitializeProjectile(shooterTransform.position,
+                    Quaternion.LookRotation(fireRequest.direction), fireRequest.direction);
                 
-                var projectileProvider = view.GetComponent<ProjectileProvider>();
-                ref var projectileData = ref projectileProvider.GetData();
-                projectileData = new ProjectileComponent
-                {
-                    direction = fireRequest.direction,
-                    speed = 10f
-                };
-                
-                var projectile = World.CreateEntity();
-                World.GetStash<TransformComponent>().Set(projectile, transformData);
-                World.GetStash<ProjectileComponent>().Set(projectile, projectileData);
-                
-                _entityViews[projectile] = view.transform;
                 _fireRequestStash.Remove(shooter);
             }
         }

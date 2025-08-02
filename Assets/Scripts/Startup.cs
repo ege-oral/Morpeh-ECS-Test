@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-using Components;
-using Components.Shoot;
+using Managers;
 using Providers;
 using Scellecs.Morpeh;
 using Systems;
@@ -14,11 +12,12 @@ public class Startup : MonoBehaviour
     
     private World _world;
     private SystemsGroup _systems;
-    private readonly Dictionary<Entity, Transform> _entityToTransform = new();
+    private EntityViewManager _entityViewManager;
     
     private void Start()
     {
         _world = World.Default;
+        _entityViewManager = new EntityViewManager();
 
         _systems = _world.CreateSystemsGroup();
         _systems.AddSystem(new HealthSystem());
@@ -26,14 +25,14 @@ public class Startup : MonoBehaviour
         _systems.AddSystem(new PlayerMovementSystem());
         _systems.AddSystem(new EnemyNavigationSystem());
         _systems.AddSystem(new ShooterSystem());
-        _systems.AddSystem(new ProjectileSpawnSystem(projectilePrefab, _entityToTransform));
+        _systems.AddSystem(new ProjectileSpawnSystem(_entityViewManager));
         _systems.AddSystem(new ProjectileMovementSystem());
-        _systems.AddSystem(new ViewSyncSystem(_entityToTransform));
+        _systems.AddSystem(new ViewSyncSystem(_entityViewManager));
         _systems.Initialize();
         _world.AddSystemsGroup(order: 0, _systems);
 
-        CreatePlayerEntity();
-        CreateEnemyEntity();
+        InitializePools();
+        CreateInitialEntities();
     }
     
     private void Update() 
@@ -41,72 +40,38 @@ public class Startup : MonoBehaviour
         _systems.Update(Time.deltaTime);
     }
 
-    private void CreatePlayerEntity() 
+    private void CreateInitialEntities()
+    {
+        CreatePlayerEntity();
+        CreateEnemyEntity();
+    }
+    
+    private void CreatePlayerEntity()
     {
         var playerGo = Instantiate(playerPrefab);
-        var entity = _world.CreateEntity();
-
-        var inputProvider = playerGo.GetComponent<InputProvider>();
-        ref var inputData = ref inputProvider.GetData();
-        inputData = new InputComponent { horizontalInput = 0f, verticalInput = 0f };
+        var playerProvider = playerGo.GetComponent<PlayerEntityProvider>();
         
-        var movementProvider = playerGo.GetComponent<MovementProvider>();
-        ref var movementData = ref movementProvider.GetData();
-        movementData = new MovementComponent { speed = 5f };
-        
-        var transformProvider = playerGo.GetComponent<TransformProvider>();
-        ref var transformData = ref transformProvider.GetData();
-        transformData = new TransformComponent();
-        
-        var shooterProvider = playerGo.GetComponent<ShooterProvider>();
-        ref var shooterData = ref shooterProvider.GetData();
-        shooterData = new ShooterComponent
+        if (playerProvider != null)
         {
-            fireCooldown = 1f,
-            fireRange = 20f,
-            fireTimer = 1f
-        };
-        
-        var playerTagProvider = playerGo.GetComponent<PlayerTagProvider>();
-        ref var playerTagData = ref playerTagProvider.GetData();
-        playerTagData = new PlayerTag();
-        
-        _world.GetStash<InputComponent>().Set(entity, inputData);
-        _world.GetStash<MovementComponent>().Set(entity, movementData);
-        _world.GetStash<TransformComponent>().Set(entity, transformData);
-        _world.GetStash<ShooterComponent>().Set(entity, shooterData);
-        _world.GetStash<PlayerTag>().Set(entity, playerTagData);
-    
-        _entityToTransform[entity] = playerGo.transform;
+            _entityViewManager.RegisterEntityView(playerProvider.Entity, playerGo.transform);
+        }
     }
 
     private void CreateEnemyEntity()
     {
-        var enemyGo = Instantiate(enemyPrefab, Vector3.one, Quaternion.identity);
-        var entity = _world.CreateEntity();
-        
-        var movementProvider = enemyGo.GetComponent<MovementProvider>();
-        ref var movementData = ref movementProvider.GetData();
-        movementData = new MovementComponent { speed = 1f };
-        
-        var transformProvider = enemyGo.GetComponent<TransformProvider>();
-        ref var transformData = ref transformProvider.GetData();
-        transformData = new TransformComponent
-        {
-            position = new Vector3(3f, 3f, 0)
-        };
-        
-        var enemyTagProvider = enemyGo.GetComponent<EnemyTagProvider>();
-        ref var enemyTagData = ref enemyTagProvider.GetData();
-        enemyTagData = new EnemyTag();
-        
-        _world.GetStash<MovementComponent>().Set(entity, movementData);
-        _world.GetStash<TransformComponent>().Set(entity, transformData);
-        _world.GetStash<EnemyTag>().Set(entity, enemyTagData);
-
-        _entityToTransform[entity] = enemyGo.transform;
+        var entity = _entityViewManager.GetPooledEntity("Enemy");
+        var enemyTransform = _entityViewManager.GetEntityTransform(entity);
+        var enemyEntityProvider = enemyTransform.GetComponent<EnemyEntityProvider>();
+        enemyEntityProvider.InitializePosition(new Vector3(5f, 5f, 0), Quaternion.identity);
     }
-
+    
+    private void InitializePools()
+    {
+        _entityViewManager.InitializePool("Enemy", enemyPrefab, 1, null);
+        _entityViewManager.InitializePool("Projectile", projectilePrefab, 100, null);
+    }
+    
+    
     private void OnDestroy() 
     {
         _systems.Dispose();

@@ -116,8 +116,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1398572660508476915}
-  - component: {fileID: 4613154953246467259}
-  - component: {fileID: 7427128196046737779}
+  - component: {fileID: -5026188058728412605}
   m_Layer: 0
   m_Name: Projectile
   m_TagString: Untagged
@@ -141,7 +140,7 @@ Transform:
   - {fileID: 9151976573024311802}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4613154953246467259
+--- !u!114 &-5026188058728412605
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -150,25 +149,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8466961170715741090}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 373a0963fdbe947859a578b9bd32bc9c, type: 3}
+  m_Script: {fileID: 11500000, guid: 1326c09a5e074833a940d34b45cde0ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializedData:
-    position: {x: 0, y: 0, z: 0}
-    rotation: {x: 0, y: 0, z: 0, w: 0}
-    scale: {x: 0, y: 0, z: 0}
---- !u!114 &7427128196046737779
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8466961170715741090}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f64a842654054b65859aefd7e9c0b998, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  serializedData:
-    direction: {x: 0, y: 0, z: 0}
-    speed: 0
+  projectileSpeed: 10

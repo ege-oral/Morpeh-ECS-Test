@@ -1,8 +1,7 @@
-using System.Collections.Generic;
 using Components;
+using Managers;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
-using UnityEngine;
 
 namespace Systems
 {
@@ -15,11 +14,11 @@ namespace Systems
         private Filter _filter;
         private Stash<TransformComponent> _transform;
         
-        private readonly Dictionary<Entity, Transform> _views;
+        private readonly EntityViewManager _entityViewManager;
         
-        public ViewSyncSystem(Dictionary<Entity, Transform> views)
+        public ViewSyncSystem(EntityViewManager entityViewManager)
         {
-            _views = views;
+            _entityViewManager = entityViewManager;
         }
 
         public void OnAwake()
@@ -32,11 +31,12 @@ namespace Systems
         {
             foreach (var entity in _filter)
             {
-                if (_views.TryGetValue(entity, out var view) == false) continue;
+                var entityTransform = _entityViewManager.GetEntityTransform(entity);
+                if (entityTransform == null) continue;
                 
                 ref var transformComponent = ref _transform.Get(entity);
-                view.position = transformComponent.position;
-                view.rotation = transformComponent.rotation;
+                entityTransform.position = transformComponent.position;
+                entityTransform.rotation = transformComponent.rotation;
             }
         }
 
