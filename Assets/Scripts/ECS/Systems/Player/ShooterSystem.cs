@@ -23,7 +23,7 @@ namespace ECS.Systems.Player
         public void OnAwake() 
         {
             _shooterFilter = World.Filter.With<TransformComponent>().With<ShooterComponent>().Build();
-            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().Without<DeadTag>().Build();
+            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().Without<DeadTag>().Without<InactiveTag>().Build();
             
             _transformStash = World.GetStash<TransformComponent>();
             _shooterStash = World.GetStash<ShooterComponent>();

@@ -47,7 +47,6 @@ namespace ECS.Systems.Projectile
 
                 projectileEntityProvider.InitializeProjectile(shooterTransform.position,
                     Quaternion.LookRotation(fireRequest.direction), fireRequest.direction);
-                
                 _fireRequestStash.Remove(shooter);
             }
         }

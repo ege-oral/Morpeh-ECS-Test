@@ -23,7 +23,7 @@ namespace ECS.Systems.Enemy
         public void OnAwake()
         {
             _playerFilter = World.Filter.With<PlayerTag>().With<TransformComponent>().Without<InvincibilityComponent>().Build();
-            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().Build();
+            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().Without<DeadTag>().Without<InactiveTag>().Build();
             _transformStash = World.GetStash<TransformComponent>();
             _damageEventStash = World.GetStash<DamageEvent>();
         }
@@ -58,7 +58,10 @@ namespace ECS.Systems.Enemy
 
         public void Dispose()
         {
-
+            _playerFilter = null;
+            _enemyFilter = null;
+            _transformStash = null;
+            _damageEventStash = null;
         }
     }
 }

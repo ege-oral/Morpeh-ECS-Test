@@ -1,5 +1,6 @@
 using ECS.Components.Projectile;
 using ECS.Components.Shared;
+using ECS.Components.Tags;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 
@@ -18,7 +19,7 @@ namespace ECS.Systems.Projectile
 
         public void OnAwake()
         {
-            _filter = World.Filter.With<ProjectileComponent>().With<TransformComponent>().Build();
+            _filter = World.Filter.With<ProjectileComponent>().With<TransformComponent>().Without<InactiveTag>().Build();
             _transformStash = World.GetStash<TransformComponent>();
             _projectileStash = World.GetStash<ProjectileComponent>();
         }

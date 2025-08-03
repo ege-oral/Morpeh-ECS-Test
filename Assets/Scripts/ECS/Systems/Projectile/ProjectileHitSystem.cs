@@ -26,8 +26,8 @@ namespace ECS.Systems.Projectile
 
         public void OnAwake()
         {
-            _projectileFilter = World.Filter.With<TransformComponent>().With<ProjectileComponent>().Build();
-            _enemyFilter = World.Filter.With<TransformComponent>().With<HealthComponent>().With<EnemyTag>().Without<DeadTag>().Build();
+            _projectileFilter = World.Filter.With<TransformComponent>().With<ProjectileComponent>().Without<InactiveTag>().Build();
+            _enemyFilter = World.Filter.With<TransformComponent>().With<HealthComponent>().With<EnemyTag>().Without<DeadTag>().Without<InactiveTag>().Build();
 
             _projectileStash = World.GetStash<ProjectileComponent>();
             _transformStash = World.GetStash<TransformComponent>();

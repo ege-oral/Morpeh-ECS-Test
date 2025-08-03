@@ -21,7 +21,7 @@ namespace Managers
                 return;
             }
 
-            _pools[poolName] = new ObjectPool(prefab, size, configureEntity, _world);
+            _pools[poolName] = new ObjectPool(poolName, prefab, size, configureEntity, _world);
         }
 
         public Entity GetPooledEntity(string poolName)
@@ -51,10 +51,17 @@ namespace Managers
             }
         }
 
-        public void RegisterEntityView(Entity entity, Transform transform) => _entityToTransform[entity] = transform;
-        public void UnregisterEntityView(Entity entity) => _entityToTransform.Remove(entity);
-        public Transform GetEntityTransform(Entity entity) => _entityToTransform.GetValueOrDefault(entity);
-        public IReadOnlyDictionary<Entity, Transform> GetEntityTransformMap() => _entityToTransform;
+        public void RegisterEntityView(Entity entity, Transform transform) =>
+            _entityToTransform[entity] = transform;
+
+        public void UnregisterEntityView(Entity entity) =>
+            _entityToTransform.Remove(entity);
+
+        public Transform GetEntityTransform(Entity entity) =>
+            _entityToTransform.GetValueOrDefault(entity);
+
+        public IReadOnlyDictionary<Entity, Transform> GetEntityTransformMap() =>
+            _entityToTransform;
 
         public void Dispose()
         {
@@ -73,17 +80,16 @@ namespace Managers
             private readonly World _world;
             private readonly Transform _poolParent;
 
-            public ObjectPool(GameObject prefab, int size, Action<Entity, GameObject> configureEntity, World world)
+            public ObjectPool(string name, GameObject prefab, int size, Action<Entity, GameObject> configureEntity, World world)
             {
                 _prefab = prefab;
                 _configureEntity = configureEntity;
                 _world = world;
-
-                _poolParent = new GameObject($"{prefab.name}_Pool").transform;
+                _poolParent = new GameObject($"{name}_Pool").transform;
 
                 for (var i = 0; i < size; i++)
                 {
-                    _pool.Enqueue(CreatePooledInstance(false));
+                    _pool.Enqueue(CreateInstance(false));
                 }
             }
 
@@ -93,15 +99,20 @@ namespace Managers
                 {
                     var (entity, transform) = _pool.Dequeue();
                     transform.gameObject.SetActive(true);
+                    _world.GetStash<InactiveTag>().Remove(entity);
                     _world.GetStash<DeadTag>().Remove(entity);
+                    
+
                     return (entity, transform);
                 }
 
-                return CreatePooledInstance(true);
+                return CreateInstance(true);
             }
 
             public void Return(Entity entity, Transform transform)
             {
+                _world.GetStash<InactiveTag>().Add(entity, new InactiveTag());
+
                 transform.SetParent(_poolParent);
                 transform.gameObject.SetActive(false);
                 _pool.Enqueue((entity, transform));
@@ -119,17 +130,26 @@ namespace Managers
                 UnityEngine.Object.Destroy(_poolParent.gameObject);
             }
 
-            private (Entity entity, Transform transform) CreatePooledInstance(bool isActive)
+            private (Entity entity, Transform transform) CreateInstance(bool isActive)
             {
-                var go = UnityEngine.Object.Instantiate(_prefab, _poolParent);
-                var entityProvider = go.GetComponent<EntityProvider>();
+                var instance = UnityEngine.Object.Instantiate(_prefab, _poolParent);
+                var entityProvider = instance.GetComponent<EntityProvider>();
+
+                if (entityProvider == null)
+                {
+                    Debug.LogError($"Missing EntityProvider on prefab '{_prefab.name}'.");
+                    return (default, instance.transform);
+                }
+                
                 var entity = entityProvider.Entity;
-
-                _world.GetStash<DeadTag>().Set(entity, new DeadTag());
-                _configureEntity?.Invoke(entity, go);
-
-                go.SetActive(isActive);
-                return (entity, go.transform);
+                _configureEntity?.Invoke(entity, instance);
+                instance.SetActive(isActive);
+                
+                if (isActive == false)
+                {
+                    _world.GetStash<InactiveTag>().Set(entity, new InactiveTag());
+                }
+                return (entity, instance.transform);
             }
         }
     }

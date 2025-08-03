@@ -22,7 +22,7 @@ namespace ECS.Systems.Enemy
         public void OnAwake()
         {
             _playerFilter = World.Filter.With<PlayerTag>().With<TransformComponent>().Build();
-            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().With<MovementComponent>().Build();
+            _enemyFilter = World.Filter.With<EnemyTag>().With<TransformComponent>().With<MovementComponent>().Without<InactiveTag>().Build();
 
             _transformStash = World.GetStash<TransformComponent>();
             _movementStash = World.GetStash<MovementComponent>();

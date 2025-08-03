@@ -11,17 +11,17 @@ namespace Views
     {
         [SerializeField] private Slider healthBar;
         
-        private int _playerEntityId;
+        private int? _playerEntityId;
         
-        private void Awake()
+        private void Start()
         {
-            _playerEntityId = FindPlayerEntityId();
             healthBar.value = 1f;
             SignalBus.Get<DamageSignal>().Subscribe(OnDamageSignal);
         }
 
         private void OnDamageSignal(Entity entity, int currentHealth, int maxHealth)
         {
+            _playerEntityId ??= FindPlayerEntityId();
             if (entity.Id != _playerEntityId) return;
             
             healthBar.value = (float)currentHealth / maxHealth;

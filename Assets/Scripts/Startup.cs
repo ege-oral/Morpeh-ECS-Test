@@ -17,7 +17,7 @@ public class Startup : MonoBehaviour
     private SystemsGroup _systems;
     private EntityViewManager _entityViewManager;
     
-    private void Start()
+    private void Awake()
     {
         _world = World.Default;
         _entityViewManager = new EntityViewManager();

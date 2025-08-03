@@ -20,7 +20,7 @@ namespace ECS.Systems.Core
         {
             _filter = World.Filter.With<HealthComponent>().Build();
             _healthStash = World.GetStash<HealthComponent>();
-            _deadTagStash  = World.GetStash<DeadTag>();
+            _deadTagStash = World.GetStash<DeadTag>();
         }
 
         public void OnUpdate(float deltaTime) 

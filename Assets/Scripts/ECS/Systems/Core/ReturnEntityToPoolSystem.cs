@@ -14,6 +14,7 @@ namespace ECS.Systems.Core
         public World World { get; set;}
         private Filter _filter;
         private Stash<PoolableEntity> _poolStash;
+        private Stash<DeadTag> _deadTagStash;
         
         private readonly EntityViewManager _entityViewManager;
         public ReturnEntityToPoolSystem(EntityViewManager entityViewManager)
@@ -23,8 +24,9 @@ namespace ECS.Systems.Core
         
         public void OnAwake()
         {
-            _filter = World.Filter.With<PoolableEntity>().With<DeadTag>().Build();
+            _filter = World.Filter.With<PoolableEntity>().With<DeadTag>().Without<InactiveTag>().Build();
             _poolStash = World.GetStash<PoolableEntity>();
+            _deadTagStash = World.GetStash<DeadTag>();
         }
 
         public void OnUpdate(float deltaTime) 

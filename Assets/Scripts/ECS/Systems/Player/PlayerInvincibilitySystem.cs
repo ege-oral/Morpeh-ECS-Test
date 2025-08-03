@@ -1,3 +1,5 @@
+using Core;
+using Core.Signal;
 using ECS.Components.Player;
 using ECS.Components.Tags;
 using Scellecs.Morpeh;
@@ -13,6 +15,8 @@ namespace ECS.Systems.Player
         public World World { get; set;}
         private Filter _invincibilityFilter;
         private Stash<InvincibilityComponent> _invincibilityStash;
+        
+        private bool _isSignalSent;
 
         public void OnAwake()
         {
@@ -24,12 +28,19 @@ namespace ECS.Systems.Player
         {
             foreach (var entity in _invincibilityFilter)
             {
+                if (_isSignalSent == false)
+                {
+                    _isSignalSent = true;
+                    SignalBus.Get<InvincibilitySignal>().Invoke(true);
+                }
                 ref var invincibilityComponent = ref _invincibilityStash.Get(entity);
                 invincibilityComponent.remainingTime -= deltaTime;
 
                 if (invincibilityComponent.remainingTime <= 0)
                 {
                     _invincibilityStash.Remove(entity);
+                    SignalBus.Get<InvincibilitySignal>().Invoke(false);
+                    _isSignalSent = false;
                 }
             }
         }

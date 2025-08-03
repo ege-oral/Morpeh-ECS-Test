@@ -34,46 +34,65 @@ namespace ECS.Systems.Core
             _deadTagStash = World.GetStash<DeadTag>();
         }
 
-        public void OnUpdate(float deltaTime) 
+        public void OnUpdate(float deltaTime)
         {
             foreach (var damageEventEntity in _damageEventFilter)
             {
                 ref var damageEvent = ref _damageEventStash.Get(damageEventEntity);
-                var sourceEntity = damageEvent.sourceEntity;
                 var targetEntity = damageEvent.targetEntity;
 
-                if (_invincibilityStash.Has(sourceEntity))
+                if (_invincibilityStash.Has(targetEntity))
                 {
+                    RemoveDamageEvent(damageEventEntity);
                     continue;
                 }
-               
+
                 if (damageEvent.instantKill)
                 {
-                    _deadTagStash.Set(targetEntity, new DeadTag());
+                    KillEntity(targetEntity);
+                    RemoveDamageEvent(damageEventEntity);
                     continue;
                 }
-                
-                ref var healthComponent = ref _healthComponentStash.Get(targetEntity);
-                healthComponent.currentHealth -= damageEvent.damageAmount;
-                
-                if (healthComponent.currentHealth <= 0)
+
+                ref var health = ref _healthComponentStash.Get(targetEntity);
+                health.currentHealth -= damageEvent.damageAmount;
+
+                if (health.currentHealth <= 0f)
                 {
-                    _deadTagStash.Set(targetEntity, new DeadTag());
+                    KillEntity(targetEntity);
+                    RemoveDamageEvent(damageEventEntity);
+                    continue;
                 }
-                
-                foreach (var player in _player)
+
+                ApplyInvincibilityIfPlayer(targetEntity);
+                SignalBus.Get<DamageSignal>().Invoke(targetEntity, health.currentHealth, health.maxHealth);
+
+                RemoveDamageEvent(damageEventEntity);
+            }
+        }
+        
+        private void RemoveDamageEvent(Entity damageEventEntity)
+        {
+            _damageEventStash.Remove(damageEventEntity);
+        }
+
+        private void KillEntity(Entity entity)
+        {
+            _deadTagStash.Set(entity, new DeadTag());
+        }
+
+        private void ApplyInvincibilityIfPlayer(Entity entity)
+        {
+            foreach (var playerEntity in _player)
+            {
+                if (playerEntity.Id == entity.Id)
                 {
-                    if (sourceEntity.Id == player.Id)
+                    _invincibilityStash.Set(entity, new InvincibilityComponent
                     {
-                        _invincibilityStash.Set(sourceEntity, new InvincibilityComponent
-                        {
-                            remainingTime = 5f
-                        });
-                    }
+                        remainingTime = 2f
+                    });
+                    break;
                 }
-                
-                _damageEventStash.Remove(damageEventEntity);
-                SignalBus.Get<DamageSignal>().Invoke(targetEntity, healthComponent.currentHealth, healthComponent.maxHealth);
             }
         }
 
