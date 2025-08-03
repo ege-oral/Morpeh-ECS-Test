@@ -1,10 +1,10 @@
+using ECS.Providers;
+using ECS.Systems.Core;
+using ECS.Systems.Enemy;
+using ECS.Systems.Player;
+using ECS.Systems.Projectile;
 using Managers;
-using Providers;
 using Scellecs.Morpeh;
-using Systems;
-using Systems.Enemy;
-using Systems.Player;
-using Systems.Projectile;
 using UnityEngine;
 
 public class Startup : MonoBehaviour

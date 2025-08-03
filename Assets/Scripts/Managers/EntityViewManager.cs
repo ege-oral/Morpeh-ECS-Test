@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Components;
+using ECS.Components.Tags;
 using Scellecs.Morpeh;
 using Scellecs.Morpeh.Providers;
 using UnityEngine;
