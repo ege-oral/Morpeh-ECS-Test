@@ -12,7 +12,7 @@ namespace ECS.Systems.Core
     {
         public World World { get; set; }
         private Filter _filter;
-        private Stash<TransformComponent> _transform;
+        private Stash<TransformComponent> _transformStash;
         
         private readonly EntityViewManager _entityViewManager;
         
@@ -23,7 +23,7 @@ namespace ECS.Systems.Core
 
         public void OnAwake()
         {
-            _transform = World.GetStash<TransformComponent>();
+            _transformStash = World.GetStash<TransformComponent>();
             _filter = World.Filter.With<TransformComponent>().Build();
         }
 
@@ -34,7 +34,7 @@ namespace ECS.Systems.Core
                 var entityTransform = _entityViewManager.GetEntityTransform(entity);
                 if (entityTransform == null) continue;
                 
-                ref var transformComponent = ref _transform.Get(entity);
+                ref var transformComponent = ref _transformStash.Get(entity);
                 entityTransform.position = transformComponent.position;
                 entityTransform.rotation = transformComponent.rotation;
             }
@@ -42,6 +42,8 @@ namespace ECS.Systems.Core
 
         public void Dispose()
         {
+            _filter = null;
+            _transformStash = null;
         }
     }
 }

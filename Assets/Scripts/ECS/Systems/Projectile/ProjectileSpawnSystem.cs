@@ -54,6 +54,9 @@ namespace ECS.Systems.Projectile
 
         public void Dispose()
         {
+            _shooterFilter = null;
+            _fireRequestStash = null;
+            _transformStash = null;
         }
     }
 }

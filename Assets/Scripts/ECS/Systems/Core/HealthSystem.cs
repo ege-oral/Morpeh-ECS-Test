@@ -37,7 +37,9 @@ namespace ECS.Systems.Core
 
         public void Dispose() 
         {
-            
+            _filter = null;
+            _healthStash = null;
+            _deadTagStash = null;
         }
     }
 }

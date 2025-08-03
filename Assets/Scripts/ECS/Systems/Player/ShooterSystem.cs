@@ -70,6 +70,12 @@ namespace ECS.Systems.Player
         public void Dispose()
         {
 
+            _shooterFilter = null;
+            _enemyFilter = null;
+            _transformStash = null;
+            _shooterStash = null;
+            _fireRequestStash = null;
+            _enemyTransformStash = null;
         }
     }
 }

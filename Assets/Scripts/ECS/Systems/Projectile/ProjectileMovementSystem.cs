@@ -36,7 +36,9 @@ namespace ECS.Systems.Projectile
 
         public void Dispose()
         {
-
+            _filter = null;
+            _transformStash = null;
+            _projectileStash = null;
         }
     }
 }

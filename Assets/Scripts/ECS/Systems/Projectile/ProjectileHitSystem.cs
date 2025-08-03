@@ -51,7 +51,11 @@ namespace ECS.Systems.Projectile
 
         public void Dispose()
         {
-            
+            _projectileFilter = null;
+            _enemyFilter = null;
+            _transformStash = null;
+            _healthStash = null;
+            _deadStash = null;
         }
     }
 }

@@ -52,7 +52,10 @@ namespace ECS.Systems.Enemy
 
         public void Dispose()
         {
-
+            _playerFilter = null;
+            _enemyFilter = null;
+            _transformStash = null;
+            _movementStash = null;
         }
     }
 }

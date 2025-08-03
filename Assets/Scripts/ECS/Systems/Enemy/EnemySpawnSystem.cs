@@ -38,7 +38,7 @@ namespace ECS.Systems.Enemy
 
             var enemyEntityProvider = enemyEntityTransform.GetComponent<EnemyEntityProvider>();
             if(enemyEntityProvider  == null) return;
-            enemyEntityProvider.InitializePosition(GetRandomPosition(Vector3.zero, new Vector3(20f, 20f, 0f)),
+            enemyEntityProvider.InitializePosition(GetRandomPosition(Vector3.zero, new Vector3(10f, 10f, 0f)),
                 Quaternion.identity);
         }
         
