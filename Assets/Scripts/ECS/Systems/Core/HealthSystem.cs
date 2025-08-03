@@ -1,4 +1,4 @@
-using ECS.Components.Shared;
+using ECS.Components.Health;
 using ECS.Components.Tags;
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
@@ -28,7 +28,7 @@ namespace ECS.Systems.Core
             foreach (var entity in _filter) 
             {
                 ref var healthComponent = ref _healthStash.Get(entity);
-                if (healthComponent.healthPoints <= 0)
+                if (healthComponent.currentHealth <= 0)
                 {
                     _deadTagStash.Set(entity);
                 }

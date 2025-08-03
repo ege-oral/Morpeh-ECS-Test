@@ -1,18 +1,26 @@
+using ECS.Components.Events;
+using ECS.Components.Health;
 using ECS.Components.Projectile;
 using ECS.Components.Shared;
 using ECS.Components.Tags;
 using Scellecs.Morpeh;
+using Unity.IL2CPP.CompilerServices;
 
 namespace ECS.Systems.Projectile
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+    [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public sealed class ProjectileHitSystem : ISystem
     {
         private Filter _projectileFilter;
         private Filter _enemyFilter;
 
+        private Stash<ProjectileComponent> _projectileStash;
         private Stash<TransformComponent> _transformStash;
-        private Stash<HealthComponent> _healthStash;
-        private Stash<DeadTag> _deadStash;
+        private Stash<DamageEvent> _damageEventStash;
+        
+        private const float HitRadius = 1f;
 
         public World World { get; set; }
 
@@ -21,30 +29,42 @@ namespace ECS.Systems.Projectile
             _projectileFilter = World.Filter.With<TransformComponent>().With<ProjectileComponent>().Build();
             _enemyFilter = World.Filter.With<TransformComponent>().With<HealthComponent>().With<EnemyTag>().Without<DeadTag>().Build();
 
+            _projectileStash = World.GetStash<ProjectileComponent>();
             _transformStash = World.GetStash<TransformComponent>();
-            _healthStash = World.GetStash<HealthComponent>();
-            _deadStash = World.GetStash<DeadTag>();
+            _damageEventStash = World.GetStash<DamageEvent>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (var projectile in _projectileFilter)
             {
-                if(_deadStash.Has(projectile)) continue;
-                
                 ref var projTransform = ref _transformStash.Get(projectile);
                 foreach (var enemy in _enemyFilter)
                 {
                     ref var enemyTransform = ref _transformStash.Get(enemy);
-                    ref var enemyHealth = ref _healthStash.Get(enemy);
-
                     var sqrDistance = (enemyTransform.position - projTransform.position).sqrMagnitude;
-                    var hitRadius = 1f;
 
-                    if (sqrDistance <= hitRadius * hitRadius == false) continue;
+                    if (sqrDistance <= HitRadius == false) continue;
+
+                    var damageEventForEnemy = World.CreateEntity();
+                    _damageEventStash.Set(damageEventForEnemy, new DamageEvent
+                    {
+                        sourceEntity = projectile,
+                        targetEntity = enemy,
+                        damageAmount = 1,
+                        instantKill = false
+                    });
                     
-                    enemyHealth.healthPoints -= 1;
-                    _deadStash.Set(projectile, new DeadTag());
+                    var damageEventForProjectile = World.CreateEntity();
+                    _damageEventStash.Set(damageEventForProjectile, new DamageEvent
+                    {
+                        sourceEntity = enemy,
+                        targetEntity = projectile,
+                        damageAmount = 999,
+                        instantKill = true
+                    });
+
+                    _projectileStash.Remove(projectile);
                 }
             }
         }
@@ -54,8 +74,7 @@ namespace ECS.Systems.Projectile
             _projectileFilter = null;
             _enemyFilter = null;
             _transformStash = null;
-            _healthStash = null;
-            _deadStash = null;
+            _projectileStash = null;
         }
     }
 }

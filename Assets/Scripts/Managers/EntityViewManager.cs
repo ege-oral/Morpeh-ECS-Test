@@ -83,7 +83,7 @@ namespace Managers
 
                 for (var i = 0; i < size; i++)
                 {
-                    _pool.Enqueue(CreatePooledInstance());
+                    _pool.Enqueue(CreatePooledInstance(false));
                 }
             }
 
@@ -97,7 +97,7 @@ namespace Managers
                     return (entity, transform);
                 }
 
-                return CreatePooledInstance();
+                return CreatePooledInstance(true);
             }
 
             public void Return(Entity entity, Transform transform)
@@ -119,7 +119,7 @@ namespace Managers
                 UnityEngine.Object.Destroy(_poolParent.gameObject);
             }
 
-            private (Entity entity, Transform transform) CreatePooledInstance()
+            private (Entity entity, Transform transform) CreatePooledInstance(bool isActive)
             {
                 var go = UnityEngine.Object.Instantiate(_prefab, _poolParent);
                 var entityProvider = go.GetComponent<EntityProvider>();
@@ -128,7 +128,7 @@ namespace Managers
                 _world.GetStash<DeadTag>().Set(entity, new DeadTag());
                 _configureEntity?.Invoke(entity, go);
 
-                go.SetActive(false);
+                go.SetActive(isActive);
                 return (entity, go.transform);
             }
         }

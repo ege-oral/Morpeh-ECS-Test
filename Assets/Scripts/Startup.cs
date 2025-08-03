@@ -24,9 +24,12 @@ public class Startup : MonoBehaviour
 
         _systems = _world.CreateSystemsGroup();
         _systems.AddSystem(new HealthSystem());
+        _systems.AddSystem(new DamageSystem());
         _systems.AddSystem(new InputSystem());
         _systems.AddSystem(new PlayerMovementSystem());
+        _systems.AddSystem(new PlayerInvincibilitySystem());
         _systems.AddSystem(new EnemyNavigationSystem());
+        _systems.AddSystem(new EnemyPlayerCollisionSystem());
         _systems.AddSystem(new ShooterSystem());
         _systems.AddSystem(new ProjectileSpawnSystem(_entityViewManager));
         _systems.AddSystem(new EnemySpawnSystem(_entityViewManager));

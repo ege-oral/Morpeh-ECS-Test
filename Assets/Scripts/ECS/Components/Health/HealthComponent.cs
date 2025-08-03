@@ -1,7 +1,7 @@
 using Scellecs.Morpeh;
 using Unity.IL2CPP.CompilerServices;
 
-namespace ECS.Components.Shared
+namespace ECS.Components.Health
 {
     [System.Serializable]
     [Il2CppSetOption(Option.NullChecks, false)]
@@ -9,6 +9,7 @@ namespace ECS.Components.Shared
     [Il2CppSetOption(Option.DivideByZeroChecks, false)]
     public struct HealthComponent : IComponent
     {
-        public int healthPoints;
+        public int currentHealth;
+        public int maxHealth;
     }
 }

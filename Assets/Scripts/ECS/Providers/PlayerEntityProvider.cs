@@ -1,3 +1,4 @@
+using ECS.Components.Health;
 using ECS.Components.Projectile;
 using ECS.Components.Shared;
 using ECS.Components.Tags;
@@ -9,7 +10,8 @@ namespace ECS.Providers
 {
     public class PlayerEntityProvider : EntityProvider
     {
-        [Header("Player Settings")]
+        [Header("Player Settings")] 
+        [SerializeField] private int playerHealth = 10;
         [SerializeField] private float speed = 5f;
         [SerializeField] private float fireCooldown = 1f;
         [SerializeField] private float fireRange = 20f;
@@ -21,6 +23,7 @@ namespace ECS.Providers
             _world.GetStash<InputComponent>().Set(Entity, new InputComponent());
             _world.GetStash<MovementComponent>().Set(Entity, new MovementComponent { speed = speed });
             _world.GetStash<TransformComponent>().Set(Entity, new TransformComponent());
+            _world.GetStash<HealthComponent>().Set(Entity, new HealthComponent{currentHealth = playerHealth, maxHealth = playerHealth});
         
             _world.GetStash<ShooterComponent>().Set(Entity, new ShooterComponent
             {

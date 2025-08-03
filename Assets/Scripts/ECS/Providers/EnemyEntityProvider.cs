@@ -1,3 +1,4 @@
+using ECS.Components.Health;
 using ECS.Components.Shared;
 using ECS.Components.Tags;
 using Scellecs.Morpeh;
@@ -17,7 +18,7 @@ namespace ECS.Providers
         {
             _world.GetStash<MovementComponent>().Set(Entity, new MovementComponent { speed = speed });
             _world.GetStash<TransformComponent>().Set(Entity, new TransformComponent());
-            _world.GetStash<HealthComponent>().Set(Entity, new HealthComponent { healthPoints = 5 });
+            _world.GetStash<HealthComponent>().Set(Entity, new HealthComponent { currentHealth = 5, maxHealth = 5});
             _world.GetStash<PoolableEntity>().Set(Entity, new PoolableEntity {poolName = "Enemy"});
             _world.GetStash<EnemyTag>().Set(Entity, new EnemyTag());
         }
